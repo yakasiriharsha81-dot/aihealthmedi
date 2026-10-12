@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Metropolis Diagnostic Center - Sample Lab Report (Synthetic Demo)</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #1e293b; padding: 40px; margin: 0; }
+    .report-box { max-width: 800px; margin: 0 auto; background: white; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 36px; border-radius: 8px; }
+    .header { border-bottom: 2px solid #0284c7; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { margin: 0; color: #0369a1; font-size: 22px; }
+    .header p { margin: 2px 0; font-size: 13px; color: #64748b; }
+    .patient-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; background: #f1f5f9; border-radius: 6px; }
+    .patient-table td { padding: 8px 12px; }
+    .test-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+    .test-table th { background: #e0f2fe; color: #0369a1; text-align: left; padding: 10px 12px; border-bottom: 2px solid #bae6fd; }
+    .test-table td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    .abnormal { color: #dc2626; font-weight: bold; }
+    .watermark { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 24px; border-top: 1px dashed #cbd5e1; padding-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="report-box">
+    <div class="header">
+      <div>
+        <h1>METROPOLIS DIAGNOSTIC CENTER</h1>
+        <p>Plot 42, Road No. 3, Banjara Hills, Hyderabad - 500034</p>
+        <p>NABL & NABH ACCREDITED LABORATORY</p>
+      </div>
+      <div style="text-align: right;">
+        <span style="background: #fef3c7; color: #b45309; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">SYNTHETIC DEMO SAMPLE</span>
+      </div>
+    </div>
+
+    <table class="patient-table">
+      <tr>
+        <td><strong>Patient Name:</strong> S. V. Sharma (Demo)</td>
+        <td><strong>Age / Gender:</strong> 48 Y / Male</td>
+        <td><strong>Date:</strong> 15-Aug-2026</td>
+      </tr>
+      <tr>
+        <td><strong>Ref. By:</strong> Dr. K. Srinivas Rao, MD</td>
+        <td><strong>Lab ID:</strong> MET-HYD-2026-88421</td>
+        <td><strong>Sample:</strong> Fasting Blood</td>
+      </tr>
+    </table>
+
+    <table class="test-table">
+      <thead>
+        <tr>
+          <th>Investigation (Test Name)</th>
+          <th>Observed Value</th>
+          <th>Unit</th>
+          <th>Biological Reference Interval</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fasting Blood Sugar (Glucose)</td>
+          <td class="abnormal">138 *</td>
+          <td>mg/dL</td>
+          <td>70.0 - 99.0</td>
+        </tr>
+        <tr>
+          <td>Post Prandial Blood Sugar (PPBS)</td>
+          <td class="abnormal">192 *</td>
+          <td>mg/dL</td>
+          <td>70.0 - 139.0</td>
+        </tr>
+        <tr>
+          <td>Glycated Hemoglobin (HbA1c)</td>
+          <td class="abnormal">7.4 *</td>
+          <td>%</td>
+          <td>4.0 - 5.6</td>
+        </tr>
+        <tr>
+          <td>Total Cholesterol</td>
+          <td class="abnormal">224 *</td>
+          <td>mg/dL</td>
+          <td>&lt; 200.0</td>
+        </tr>
+        <tr>
+          <td>Triglycerides</td>
+          <td class="abnormal">210 *</td>
+          <td>mg/dL</td>
+          <td>&lt; 150.0</td>
+        </tr>
+        <tr>
+          <td>HDL Cholesterol (Good)</td>
+          <td class="abnormal">38 *</td>
+          <td>mg/dL</td>
+          <td>40.0 - 60.0</td>
+        </tr>
+        <tr>
+          <td>LDL Cholesterol (Calculated)</td>
+          <td class="abnormal">144 *</td>
+          <td>mg/dL</td>
+          <td>&lt; 100.0</td>
+        </tr>
+        <tr>
+          <td>Serum Creatinine</td>
+          <td>0.92</td>
+          <td>mg/dL</td>
+          <td>0.70 - 1.20</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="watermark">
+      * Marked values indicate findings outside the laboratory's standard reference interval.<br>
+      Notice: This is a synthetic de-identified report created for MediMate AI hackathon testing.
+    </div>
+  </div>
+</body>
+</html>

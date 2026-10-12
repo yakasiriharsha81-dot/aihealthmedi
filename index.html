@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediMate AI — AI-Powered Personal Health Copilot</title>
+  <meta name="description" content="Organize healthcare records and understand medical documents through OCR, structured extraction, and cautious plain-language summaries in English and Telugu.">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="app.css">
+
+  <!-- Chart.js CDN for interactive trend visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- MEDICAL SAFETY NOTICE BANNER (Prominently pinned at top) -->
+  <aside class="disclaimer-banner" role="alert" id="safety-banner">
+    <span class="disclaimer-icon">⚠️</span>
+    <span>
+      <strong>Medical Safety Notice:</strong>
+      <span data-i18n="safetyNotice">
+        MediMate AI helps organize and explain information in medical documents. It does not diagnose conditions or replace professional medical advice. Check extracted information against the original document and consult a qualified healthcare professional about medical decisions.
+      </span>
+    </span>
+    <button class="disclaimer-dismiss" onclick="document.getElementById('safety-banner').style.display='none'" title="Dismiss notice">✕</button>
+  </aside>
+
+  <!-- TOP NAVIGATION BAR -->
+  <header>
+    <nav class="navbar">
+      <div class="brand-wrapper">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <h1>MediMate AI</h1>
+          <div class="tagline" data-i18n="tagline">Your Health Records. Simplified by AI.</div>
+        </div>
+      </div>
+
+      <!-- Center Nav Links -->
+      <div class="nav-center-menu" role="tablist">
+        <button class="nav-link active" data-tab="dashboard" role="tab" id="nav-tab-dashboard">
+          <span>📊</span> Dashboard
+        </button>
+        <button class="nav-link" data-tab="upload" role="tab" id="nav-tab-upload">
+          <span>📤</span> Upload Record
+        </button>
+        <button class="nav-link" data-tab="timeline" role="tab" id="nav-tab-timeline">
+          <span>⏱️</span> Health Timeline
+        </button>
+        <button class="nav-link" data-tab="trends" role="tab" id="nav-tab-trends">
+          <span>📈</span> Lab Trends
+        </button>
+        <button class="nav-link" data-tab="abdm" role="tab" id="nav-tab-abdm">
+          <span>🇮🇳</span> ABDM / FHIR
+        </button>
+      </div>
+
+      <!-- Right Actions: Language Switcher & Patient Profile -->
+      <div class="nav-actions">
+        <!-- Language Switcher (English / Telugu) -->
+        <div class="lang-toggle-box" title="Switch Language / భాషను మార్చండి">
+          <button class="lang-btn active" id="lang-en">EN</button>
+          <button class="lang-btn" id="lang-te">తెలుగు</button>
+        </div>
+
+        <!-- Patient Profile Pill with Mock ABHA ID -->
+        <div class="patient-pill" title="Demonstration De-identified Health Profile">
+          <div class="patient-avatar">SV</div>
+          <div class="patient-meta">
+            <span class="patient-name">S. V. Sharma</span>
+            <span class="patient-abha">
+              <span class="badge badge-mock" style="padding: 1px 6px; font-size: 0.65rem;">MOCK ABHA</span>
+              91-4821-9034-7102
+            </span>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="app-container">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: DASHBOARD OVERVIEW                 -->
+    <!-- ========================================== -->
+    <section class="tab-content active" id="tab-dashboard" role="tabpanel">
+      <!-- FUTURISTIC HERO SHOWCASE BANNER -->
+      <div class="futuristic-hero-banner">
+        <div class="hero-banner-content">
+          <div class="hero-badge-pill">
+            <span class="pulse-dot"></span>
+            <span>AI-POWERED PERSONAL HEALTH COPILOT</span>
+          </div>
+          <h1 class="hero-headline-title">
+            Your Health Records.<br>
+            <span class="gradient-text">Simplified by AI.</span>
+          </h1>
+          <p class="hero-headline-desc">
+            Transform complex clinical lab reports, handwritten prescriptions, and diagnostic summaries into clear, grounded, and cautious plain-language explanations in English and Telugu.
+          </p>
+          <div class="hero-actions-group">
+            <button class="btn btn-primary btn-lg" onclick="app.switchTab('upload')">
+              <span>📤</span> Upload Medical Record
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="app.loadPresetDocument('prescription_scanned')">
+              <span>⚡</span> Try Fast Demo (Handwritten Scan)
+            </button>
+          </div>
+          <div class="hero-trust-badges">
+            <span class="trust-pill">✓ Human-in-the-Loop Review</span>
+            <span class="trust-pill">✓ Non-Diagnostic Guardrails</span>
+            <span class="trust-pill">✓ ABDM / FHIR R4 Ready</span>
+            <span class="trust-pill">✓ English &amp; Telugu (తెలుగు)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-dashboard-header">
+        <div class="hero-text">
+          <h2 data-i18n="dashTitle">Health Intelligence Dashboard</h2>
+          <p data-i18n="dashDesc">
+            Upload clinical records, review extracted data, verify uncertain values, and generate clear grounded summaries in English or Telugu.
+          </p>
+        </div>
+        <div class="hero-quick-actions">
+          <button class="btn btn-primary" onclick="app.switchTab('upload')">
+            <span>📤</span> Upload Record
+          </button>
+          <button class="btn btn-secondary" onclick="app.resetToDemoData()">
+            <span>🔄</span> Reset Demo Records
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="color: #38BDF8;">📁</div>
+          <div class="stat-content">
+            <div class="stat-label">Total Documents</div>
+            <div class="stat-number" id="stat-total-docs">3</div>
+            <div class="stat-sub">Lab reports, prescriptions</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-amber">
+          <div class="stat-icon-wrap" style="color: #FBBF24;">⚠️</div>
+          <div class="stat-content">
+            <div class="stat-label">Pending Verification</div>
+            <div class="stat-number" id="stat-pending-verify">0</div>
+            <div class="stat-sub">Requires user review</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-teal">
+          <div class="stat-icon-wrap" style="color: #2DD4BF;">🔬</div>
+          <div class="stat-content">
+            <div class="stat-label">Observations Tracked</div>
+            <div class="stat-number" id="stat-total-obs">12</div>
+            <div class="stat-sub">Compatible test points</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-purple">
+          <div class="stat-icon-wrap" style="color: #C084FC;">🛡️</div>
+          <div class="stat-content">
+            <div class="stat-label">ABDM / FHIR R4</div>
+            <div class="stat-number" style="font-size: 1.3rem; margin-top: 6px;">READY</div>
+            <div class="stat-sub">Mock ABHA integrated</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Upload Banner Trigger -->
+      <div class="upload-hero-section" id="dash-upload-box" style="padding: 26px; margin-bottom: 28px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 16px; text-align: left;">
+            <div class="upload-icon-pulse" style="width: 52px; height: 52px; font-size: 1.4rem; margin: 0;">📤</div>
+            <div>
+              <h3 style="font-size: 1.2rem; margin: 0;">Have a new medical record or prescription?</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Extract observations, cross-reference lab bounds, and generate bilingual summaries.</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="app.switchTab('upload')">
+            <span>+ Upload & Analyze Now</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Documents Section -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.2rem; font-weight: 700;" data-i18n="recentTitle">Recent Health Documents</h3>
+        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('timeline')" data-i18n="viewAll">
+          View All Records →
+        </button>
+      </div>
+
+      <div id="recent-docs-list"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: UPLOAD & EXTRACTION PIPELINE        -->
+    <!-- ========================================== -->
+    <section class="tab-content" id="tab-upload" role="tabpanel">
+      <div class="hero-dashboard-header">
+        <div class="hero-text">
+          <h2 data-i18n="uploadTitle">Upload Medical Record</h2>
+          <p data-i18n="uploadSub">
+            Drag and drop PDF reports, prescriptions, or image scans (JPG, PNG). Max 15MB.
+          </p>
+        </div>
+      </div>
+
+      <!-- Drag & Drop Zone -->
+      <div class="upload-hero-section" id="dropzone">
+        <input type="file" id="file-input" class="file-input-hidden" accept=".pdf,image/jpeg,image/png">
+        <div class="upload-icon-pulse">📄</div>
+        <h3>Drop your medical file here, or browse</h3>
+        <p>Supports laboratory reports, doctor prescriptions, discharge summaries, and diagnostic tests.</p>
+
+        <div class="upload-formats-badge">
+          <span class="format-chip">PDF (Direct text parsing)</span>
+          <span class="format-chip">JPG / PNG (Optical OCR)</span>
+          <span class="format-chip">Max 15 MB</span>
+          <span class="format-chip">Client-side SHA-256</span>
+        </div>
+
+        <button class="btn btn-primary" type="button">
+          <span>📁 Select File from Computer</span>
+        </button>
+
+        <!-- Quick Sample Document Buttons for Hackathon Demonstrations -->
+        <div class="sample-load-bar" onclick="event.stopPropagation()">
+          <span class="sample-load-title">🚀 Fast Demo (Click to test with synthetic records):</span>
+          <button class="btn btn-secondary btn-sm" onclick="app.loadPresetDocument('prescription_scanned')">
+            <span>🔬</span> Care Clinic Prescription (With Flagged Handwriting)
+          </button>
+        </div>
+      </div>
+
+      <!-- Processing Progress Card -->
+      <div class="pipeline-progress-card" id="pipeline-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: #38BDF8; display: flex; align-items: center; gap: 8px;">
+            <span class="upload-icon-pulse" style="width: 24px; height: 24px; font-size: 0.8rem; margin: 0;">⚙️</span>
+            AI Clinical Extraction in Progress
+          </h4>
+          <span id="pipeline-status-text" style="font-size: 0.82rem; color: var(--text-muted);">Processing...</span>
+        </div>
+
+        <div class="pipeline-step-bar" style="height: 8px;">
+          <div class="pipeline-step-fill" id="pipeline-overall-fill" style="width: 20%;"></div>
+        </div>
+
+        <div class="pipeline-steps">
+          <div class="pipeline-step-item active" id="step-1">
+            <span class="pipeline-step-label">1. Integrity Check</span>
+            <div class="pipeline-step-bar"><div class="pipeline-step-fill"></div></div>
+          </div>
+          <div class="pipeline-step-item" id="step-2">
+            <span class="pipeline-step-label">2. OCR / Text Extraction</span>
+            <div class="pipeline-step-bar"><div class="pipeline-step-fill"></div></div>
+          </div>
+          <div class="pipeline-step-item" id="step-3">
+            <span class="pipeline-step-label">3. Clinical Entity Structuring</span>
+            <div class="pipeline-step-bar"><div class="pipeline-step-fill"></div></div>
+          </div>
+          <div class="pipeline-step-item" id="step-4">
+            <span class="pipeline-step-label">4. Bilingual AI Summary</span>
+            <div class="pipeline-step-bar"><div class="pipeline-step-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: VERIFICATION & REVIEW SCREEN        -->
+    <!-- ========================================== -->
+    <section class="tab-content" id="tab-review" role="tabpanel">
+      <div class="hero-dashboard-header">
+        <div class="hero-text">
+          <h2 data-i18n="verifyTitle">Verification & Review Required</h2>
+          <p>
+            Please check the extracted fields against the source text. Uncertain fields and illegible terms are flagged. Correct any values before saving to your permanent health timeline.
+          </p>
+        </div>
+        <div class="hero-quick-actions">
+          <button class="btn btn-secondary" onclick="app.switchTab('upload')">
+            Cancel
+          </button>
+          <button class="btn btn-success" onclick="app.saveVerifiedDocument()">
+            <span>💾</span> Confirm & Save to Timeline
+          </button>
+        </div>
+      </div>
+
+      <!-- Split Screen: Raw Source Document vs Extracted Structured Table -->
+      <div class="verification-container">
+        <!-- Left: Raw Source Document / Text -->
+        <div class="doc-preview-panel">
+          <div class="panel-header">
+            <h3><span>📄</span> Preserved Source Text</h3>
+            <span class="badge badge-mock">Original Source</span>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+            <strong id="review-doc-title">Document.pdf</strong> — <span id="review-doc-meta">Facility • Date</span>
+          </div>
+          <div class="source-text-box" id="review-source-text">
+            Loading document source text...
+          </div>
+        </div>
+
+        <!-- Right: Structured Extracted Fields -->
+        <div class="fields-review-panel">
+          <div class="panel-header">
+            <h3><span>🔍</span> Extracted Structured Fields</h3>
+            <button class="btn btn-secondary btn-sm" onclick="app.addNewReviewField()">
+              + Add Missing Field
+            </button>
+          </div>
+
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px;">
+            Fields marked with <span class="badge badge-uncertain">⚠ Needs Verify</span> had low OCR confidence or ambiguous handwriting. Edit values directly.
+          </p>
+
+          <div class="fields-table-wrap">
+            <table class="fields-table">
+              <thead>
+                <tr>
+                  <th>Field / Entity</th>
+                  <th>Extracted Value</th>
+                  <th>Unit / Freq</th>
+                  <th>Ref Interval</th>
+                  <th>Verification</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="review-fields-tbody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grounded AI Health Summary Card below -->
+      <div class="ai-summary-card" id="review-ai-summary-card">
+        <!-- Dynamically rendered summary in EN or TE -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: CHRONOLOGICAL HEALTH TIMELINE       -->
+    <!-- ========================================== -->
+    <section class="tab-content" id="tab-timeline" role="tabpanel">
+      <div class="hero-dashboard-header">
+        <div class="hero-text">
+          <h2>Chronological Health Timeline</h2>
+          <p>
+            Unified historical record of your diagnostic tests, prescriptions, and clinical notes with full provenance.
+          </p>
+        </div>
+        <div class="hero-quick-actions">
+          <button class="btn btn-primary" onclick="app.switchTab('upload')">
+            + Add New Record
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="timeline-controls">
+        <div class="filter-pills">
+          <button class="filter-btn active" data-filter="all">All Documents</button>
+          <button class="filter-btn" data-filter="Lab">Diagnostic Labs</button>
+          <button class="filter-btn" data-filter="Prescription">Prescriptions</button>
+          <button class="filter-btn" data-filter="Discharge">Discharge Summaries</button>
+        </div>
+
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="timeline-search" class="search-input" placeholder="Search tests, facilities, medicines...">
+        </div>
+      </div>
+
+      <!-- Timeline Stream -->
+      <div class="timeline-stream" id="timeline-stream">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: COMPATIBLE LAB TRENDS & CHARTS      -->
+    <!-- ========================================== -->
+    <section class="tab-content" id="tab-trends" role="tabpanel">
+      <div class="hero-dashboard-header">
+        <div class="hero-text">
+          <h2>Compatible Lab Results Over Time</h2>
+          <p>
+            Track test values over multiple visits. Results are compared only when test type and units are compatible.
+          </p>
+        </div>
+      </div>
+
+      <div style="background: rgba(14, 165, 233, 0.08); border-left: 3px solid #0EA5E9; padding: 12px 18px; border-radius: 4px; font-size: 0.84rem; color: #BAE6FD; margin-bottom: 24px;">
+        <strong>Safety Note on Trend Comparisons:</strong> Trend lines are only generated for compatible tests with matching units. Reference intervals may vary slightly between different laboratories, reagent lots, and instrumentation. A change in numbers should be clinically correlated by your doctor.
+      </div>
+
+      <div class="trends-container">
+        <!-- Left: List of Compatible Tests -->
+        <div class="trends-sidebar">
+          <h3 style="font-size: 1rem; font-weight: 700;">Select Test to Compare</h3>
+          <div class="trends-test-list" id="trend-tests-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Right: Interactive Chart -->
+        <div class="chart-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h3 id="chart-test-title" style="font-size: 1.25rem; font-weight: 700; color: #FFFFFF;">
+                Fasting Blood Sugar Trend Over Time
+              </h3>
+              <p id="chart-test-sub" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+                Reference Range: 70.0 - 99.0 mg/dL
+              </p>
+            </div>
+            <span class="badge badge-verified">Compatible Units (mg/dL)</span>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas id="trend-chart-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 6: ABDM / FHIR R4 READINESS           -->
+    <!-- ========================================== -->
+    <section class="tab-content" id="tab-abdm" role="tabpanel">
+      <div class="hero-dashboard-header">
+        <div class="hero-text">
+          <h2>Ayushman Bharat Digital Mission (ABDM) / FHIR Readiness</h2>
+          <p>
+            MediMate AI is engineered with an ABDM and HL7 FHIR R4-inspired architecture, preserving strict provenance and resource separation.
+          </p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="color: #38BDF8;">🆔</div>
+          <div class="stat-content">
+            <div class="stat-label">Mock ABHA Identifier</div>
+            <div class="stat-number" style="font-size: 1.15rem; color: #38BDF8;">91-4821-9034-7102</div>
+            <div class="stat-sub">Strictly labeled Demo / Mock ID</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-teal">
+          <div class="stat-icon-wrap" style="color: #2DD4BF;">📦</div>
+          <div class="stat-content">
+            <div class="stat-label">FHIR R4 Resources</div>
+            <div class="stat-number" style="font-size: 1.15rem; color: #2DD4BF;">Patient, Obs, MedStatement</div>
+            <div class="stat-sub">NRCeS ABDM Profiles Inspired</div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-purple">
+          <div class="stat-icon-wrap" style="color: #C084FC;">📜</div>
+          <div class="stat-content">
+            <div class="stat-label">Provenance Tracking</div>
+            <div class="stat-number" style="font-size: 1.15rem; color: #C084FC;">Source & Verification</div>
+            <div class="stat-sub">Full audit event record</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card" style="padding: 24px; margin-top: 24px;">
+        <div style="flex: 1;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">Architecture Conformance Disclosure</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 14px;">
+            The data model separates patient demographics (<code>Patient</code>), clinical encounters (<code>Encounter</code>), lab measurements (<code>Observation</code> with LOINC codes), and prescribed therapies (<code>MedicationStatement</code> with RxNorm / generic mapping). All extractions maintain provenance records documenting the original file, page number, confidence score, and clinician verification status.
+          </p>
+          <div style="background: rgba(245, 158, 11, 0.08); border-left: 3px solid #F59E0B; padding: 10px 14px; border-radius: 4px; font-size: 0.8rem; color: #FCD34D;">
+            <strong>Notice:</strong> This implementation is FHIR R4-inspired for hackathon demonstration. Live ABDM/M1/M2 production milestones require authorized gateway keys and Indian regulatory sandbox onboarding.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: DOCUMENT DETAIL VIEW                -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="detail-modal">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="app.closeModal('detail-modal')">✕</button>
+      <div id="detail-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: FHIR R4 JSON BUNDLE VIEWER         -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="fhir-modal">
+    <div class="modal-card" style="max-width: 800px;">
+      <button class="modal-close-btn" onclick="app.closeModal('fhir-modal')">✕</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <h3 style="font-size: 1.3rem; font-weight: 700; color: #FFFFFF;">FHIR R4 / ABDM Resource Bundle</h3>
+          <p style="font-size: 0.78rem; color: var(--text-muted);">Standardized interoperability schema with provenance metadata</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary btn-sm" onclick="app.copyFhirJson()">📋 Copy JSON</button>
+          <button class="btn btn-primary btn-sm" onclick="app.downloadFhirJson()">💾 Download JSON</button>
+        </div>
+      </div>
+
+      <pre class="fhir-json-viewer" id="fhir-json-code">Loading FHIR Resource Bundle...</pre>
+    </div>
+  </div>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="sample_data.js"></script>
+  <script src="fhir.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
